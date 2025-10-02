@@ -1,0 +1,178 @@
+[
+  {
+    "region_id": 0,
+    "class_name": "plain text",
+    "bbox": {
+      "x1": 146.7913055419922,
+      "y1": 1250.88818359375,
+      "x2": 604.0301513671875,
+      "y2": 1616.9215087890625
+    },
+    "ocr_text": "Vision-Language Models (Wang et al. (2024); Wu\net al. (2024); Abdin et al. (2024); Chen et al. (2024);\nLiu et al. (2024a); Wei et al. (2024a)) have demon-\nstrated remarkable success in high-resource lan-\nguages like English. However, these advancements\nhave not translated across all languages due to a\nfundamental challenge: the scarcity of high-quality\ntraining data. This limitation is particularly evident\nin languages with complex scripts, where creat-\ning large-scale manually annotated datasets is both\ntime-consuming and prohibitively expensive. This\nhas limited the adoption of VLMs for document\nunderstanding tasks across diverse languages."
+  },
+  {
+    "region_id": 1,
+    "class_name": "plain text",
+    "bbox": {
+      "x1": 635.5543823242188,
+      "y1": 462.41241455078125,
+      "x2": 1096.3707275390625,
+      "y2": 768.4047241210938
+    },
+    "ocr_text": "Nayana is an adaptive framework designed to\nbridge this gap by enabling existing VLMs to learn\nnew languages effectively without requiring exten-\nsive annotated datasets. While this paper demon-\nstrates Nayana\u2019s capabilities through OCR tasks\nacross ten Indic languages, the framework\u2019s ap-\nproach is inherently flexible and can extend to other\ntasks and language families. Our methodology\neliminates the traditional requirement of annota-\ntion by combining synthetic data generation with\nefficient model adaptation techniques."
+  },
+  {
+    "region_id": 2,
+    "class_name": "plain text",
+    "bbox": {
+      "x1": 178.7681121826172,
+      "y1": 498.2880859375,
+      "x2": 570.9473266601562,
+      "y2": 1194.224365234375
+    },
+    "ocr_text": "We introduce Nayana, a scalable and efficient\nframework for adapting Vision-Language Mod-\nels (VLMs) to low-resource languages. Despite\nsignificant advances, modern VLMs remain\nconstrained by the scarcity of training data in\nnon-English languages, limiting their global\napplicability. Our framework addresses this\nfundamental challenge through a novel layout-\naware synthetic data generation pipeline com-\nbined with parameter-efficient adaptation tech-\nniques. Instead of requiring extensive manu-\nally annotated datasets, Nayana enables exist-\ning models to learn new languages effectively\nusing purely synthetic data. Using Low-Rank\nAdaptation (LoRA), we demonstrate this ca-\npability across ten Indic languages: Bengali,\nGujarati, Hindi, Kannada, Malayalam, Marathi,\nOdia, Punjabi, Tamil, and Telugu. Through\nextensive experiments in OCR tasks, we show\nthat models can achieve strong performance in\nnew languages without the traditional require-\nments of large-scale annotated datasets or ex-\ntensive model modifications. Nayana\u2019s success\nin adapting VLMs to new languages with syn-\nthetic data establishes a practical pathway for\nextending AI capabilities to underserved lJan-\nguage communities, particularly in scenarios\nwhere annotated data is scarce or unavailable."
+  },
+  {
+    "region_id": 3,
+    "class_name": "plain text",
+    "bbox": {
+      "x1": 654.9087524414062,
+      "y1": 1393.7000732421875,
+      "x2": 1095.5908203125,
+      "y2": 1614.685546875
+    },
+    "ocr_text": "3. Comprehensive Empirical Validation:\nThrough extensive experimentation and\nevaluation across ten Indic languages, we\nprovide strong evidence that our synthetic\ndata approach matches the performance\nof traditional OCR Models, establishing a\nscalable path forward for language adaptation\nin VLMs."
+  },
+  {
+    "region_id": 4,
+    "class_name": "plain text",
+    "bbox": {
+      "x1": 653.5975341796875,
+      "y1": 1104.4581298828125,
+      "x2": 1096.5660400390625,
+      "y2": 1355.3875732421875
+    },
+    "ocr_text": "2. Systematic Analysis of LoRA-based Adap-\ntation: We conduct a comprehensive evalu-\nation of different LoRA techniques and con-\nfigurations to determine their effectiveness in\nmultilingual adaptation. Our analysis explores\nwhether supervised fine-tuning can enhance\nlanguage transfer and identifies the optimal\nconfigurations for adapting VLMs to new lan-\nguages with minimal computational overhead."
+  },
+  {
+    "region_id": 5,
+    "class_name": "title",
+    "bbox": {
+      "x1": 144.46775817871094,
+      "y1": 158.4449005126953,
+      "x2": 1094.2196044921875,
+      "y2": 228.05587768554688
+    },
+    "ocr_text": "Nayana OCR: A Scalable Framework for Document OCR in Low-Resource\nLanguages"
+  },
+  {
+    "region_id": 6,
+    "class_name": "title",
+    "bbox": {
+      "x1": 146.5462646484375,
+      "y1": 1208.568603515625,
+      "x2": 319.4997863769531,
+      "y2": 1235.474609375
+    },
+    "ocr_text": "1. Introduction"
+  },
+  {
+    "region_id": 7,
+    "class_name": "plain text",
+    "bbox": {
+      "x1": 657.5093383789062,
+      "y1": 776.70703125,
+      "x2": 1032.39404296875,
+      "y2": 801.63427734375
+    },
+    "ocr_text": "The main contributions of this paper are:"
+  },
+  {
+    "region_id": 8,
+    "class_name": "title",
+    "bbox": {
+      "x1": 326.52874755859375,
+      "y1": 460.4216003417969,
+      "x2": 421.1581726074219,
+      "y2": 485.9524841308594
+    },
+    "ocr_text": "Abstract"
+  },
+  {
+    "region_id": 9,
+    "class_name": "plain text",
+    "bbox": {
+      "x1": 376.87200927734375,
+      "y1": 265.7576599121094,
+      "x2": 865.9378662109375,
+      "y2": 298.530029296875
+    },
+    "ocr_text": "Adithya S Kolavi!, Samarth P!, Vyoman Jain!"
+  },
+  {
+    "region_id": 10,
+    "class_name": "plain text",
+    "bbox": {
+      "x1": 230.91580200195312,
+      "y1": 363.0672912597656,
+      "x2": 1008.8358154296875,
+      "y2": 383.4870300292969
+    },
+    "ocr_text": "Correspondence: adithyaskolavi@ gmail.com, samarthprakash8 @ gmail.com, vyomanjain@ gmail.com"
+  },
+  {
+    "region_id": 11,
+    "class_name": "plain text",
+    "bbox": {
+      "x1": 548.3944702148438,
+      "y1": 326.54351806640625,
+      "x2": 693.0617065429688,
+      "y2": 354.8536682128906
+    },
+    "ocr_text": "'CognitiveLab"
+  },
+  {
+    "region_id": 12,
+    "class_name": "abandon",
+    "bbox": {
+      "x1": 179.4278106689453,
+      "y1": 1660.3951416015625,
+      "x2": 1056.794189453125,
+      "y2": 1705.3092041015625
+    },
+    "ocr_text": "Proceedings of the 1st Workshop on Language Models for Underserved Communities (LM4UC 2025), pages 86-103\nMay 4, 2025 \u00a92025 Association for Computational Linguistics"
+  },
+  {
+    "region_id": 13,
+    "class_name": "abandon",
+    "bbox": {
+      "x1": 608.3958129882812,
+      "y1": 1631.309814453125,
+      "x2": 635.1189575195312,
+      "y2": 1651.6763916015625
+    },
+    "ocr_text": "86"
+  },
+  {
+    "region_id": 14,
+    "class_name": "plain text",
+    "bbox": {
+      "x1": 659.1514892578125,
+      "y1": 861.1361083984375,
+      "x2": 1096.5185546875,
+      "y2": 1065.5919189453125
+    },
+    "ocr_text": "a,\nA layout-aware synthetic data generation\npipeline that automates the creation of train-\ning datasets while preserving visual and struc-\ntural relationships in documents. This ap-\nproach significantly reduces the dependency\non manually annotated data for low-resource\nlanguages."
+  },
+  {
+    "region_id": 15,
+    "class_name": "title",
+    "bbox": {
+      "x1": 655.4650268554688,
+      "y1": 843.6179809570312,
+      "x2": 1096.9661865234375,
+      "y2": 868.7018432617188
+    },
+    "ocr_text": "1. Novel Synthetic Data Generation Pipelines:"
+  }
+]
