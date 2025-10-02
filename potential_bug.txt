@@ -1,0 +1,20 @@
+Potential bug: darkness earlier set as random.randint(8,25) * params["stain_intensity"], then later multiplied again by params["stain_intensity"]: this double-multiplies stain intensity (so stains may be too strong). You probably intended only one multiplication — remove one factor.
+
+Edge cases: random.randint(0, width-100) assumes width > 100. If not, randint(a,b) where b
+
+Performance note: inner loops create stain_mask with nested loops — O(size²) per stain. For big images and many stains this will be slow.
+
+
+from skimage.draw import disk  # or use custom meshgrid
+mask = np.zeros((size,size), dtype=np.float32)
+rr, cc = disk((center, center), center, shape=(size,size))
+mask[rr, cc] = 1.0  # or use a radial falloff by distance
+# then multiply mask by a smooth radial falloff using gaussian
+
+Or precompute a disk mask and scale/blur it with cv2.GaussianBlur to get soft stains.
+
+
+Caveat: if params["noise"] == 0, int(15*0) == 0 and np.random.randint(0,0,...) will raise ValueError. Safer: max(1, int(15*params.get("noise", 0))).
+
+
+Note: params["texture"] must exist; otherwise KeyError.
