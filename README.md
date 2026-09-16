@@ -2,7 +2,7 @@
 
 VisionSynth is a Python project for generating synthetic text-in-image data for OCR and vision-language workflows. It is designed to ingest text from local CSV files and Hugging Face datasets, render text into images, apply background textures, and add visual degradations/effects.
 
-This README gives an in-depth project walkthrough, including setup, architecture, and a full CLI argument reference from `VisionSynth/run.py`.
+This README gives an in-depth project walkthrough, including setup, architecture, and a full CLI argument reference from `src/visionsynth/cli.py`.
 
 ---
 
@@ -25,19 +25,23 @@ Typical output artifacts are:
 ## 2) Repository layout
 
 ```text
-VisionSynth/
-  run.py                    # CLI entrypoint + argument parser (currently parser-focused)
-  huggingface_processor.py  # Hugging Face dataset loader using `datasets`
-  dataset_generator.py      # Dataset loading and CSV-saving helpers
-  text_renderer.py          # Text rendering utility
-  background_generator.py   # Background generation styles
-  effects_generator.py      # Post-processing visual effects
-  distrotion_generator.py   # Distortion helpers
+src/visionsynth/
+  __init__.py                # package version
+  __main__.py                # enables `python -m visionsynth`
+  cli.py                     # CLI entrypoint (argparse + main())
+  huggingface_processor.py   # Hugging Face dataset loader + Hub upload
+  dataset_generator.py       # CSV loading, render pipeline, CSV/metadata writer
+  text_renderer.py           # Text rendering utility
+  background_generator.py    # Background generation styles
+  effects_generator.py       # Post-processing visual effects
+  distortion_generator.py    # Geometric warp helpers (not yet wired to the CLI)
+tests/                       # pytest scaffold (test_cli.py, test_dataset_generator.py)
 ```
 
 Other top-level files:
 
-- `pyproject.toml`: project metadata + core dependencies.
+- `pyproject.toml`: project metadata (description, license, classifiers, keywords, URLs), dependencies, the `visionsynth` console-script entry point, `ruff`/`mypy`/`pytest` config, and the sdist file list (`[tool.hatch.build.targets.sdist]`).
+- `LICENSE`: MIT.
 - `uv.lock`: lockfile for reproducible installs with `uv`.
 
 ---
@@ -54,10 +58,14 @@ Other top-level files:
 uv sync
 ```
 
+This also installs the `dev` dependency group (`ruff`, `mypy`, `pytest`) into the project's local `.venv` — nothing is installed globally.
+
 Then run commands with:
 
 ```bash
-uv run python VisionSynth/run.py --help
+uv run visionsynth --help
+# or, equivalently:
+uv run python -m visionsynth --help
 ```
 
 ### Option B: with pip
@@ -66,10 +74,22 @@ uv run python VisionSynth/run.py --help
 python -m venv .venv
 source .venv/bin/activate
 pip install -U pip
-pip install noise numpy opencv-python pillow scipy pandas datasets
+pip install -e .
 ```
 
-> Note: `pandas` and `datasets` are required by Hugging Face/CSV processing modules, even if not listed in core dependencies.
+This installs the `visionsynth` package (and the `visionsynth` console script) from `src/visionsynth/` in editable mode, using the dependencies declared in `pyproject.toml`.
+
+### Development tooling
+
+```bash
+uv run ruff check src tests   # lint
+uv run ruff format src tests  # format
+uv run mypy src                # type-check
+uv run pytest                  # run the test suite (tests/ — a lean scaffold, not full coverage)
+uv build                       # sanity-check the sdist/wheel actually build
+```
+
+Licensed under MIT (see `LICENSE`).
 
 ---
 
@@ -93,14 +113,14 @@ Use this conceptual pipeline:
 
 5. **Apply background style**
    - Plain, Gaussian, or image backgrounds.
-   - Optional lined/old/brownish/parchment paper transforms.
+   - Optional lined/old/birch/parchment paper styles via `--background`.
 
 6. **Apply post-processing effects**
    - Blur, fiber, fold creases, ink bleed, shadows, and strain.
 
 7. **Write outputs**
-   - Save images in `output_dir`.
-   - Save CSV metadata (`output_csv`) describing image ↔ text mapping.
+   - Save images under `--output-dir`.
+   - Save CSV metadata (`--output-csv`) describing image ↔ text mapping.
 
 ---
 
@@ -109,146 +129,106 @@ Use this conceptual pipeline:
 ### A) Generate using a Hugging Face dataset
 
 ```bash
-uv run python VisionSynth/run.py \
-  --dataset_name imdb \
+uv run visionsynth \
+  --dataset-name imdb \
   --split train \
-  --output_dir output/ \
-  --output_csv output.csv
+  --output-dir output/ \
+  --output-csv output.csv
 ```
 
 ### B) Add visual variety for OCR robustness
 
 ```bash
-uv run python VisionSynth/run.py \
-  --dataset_name ag_news \
+uv run visionsynth \
+  --dataset-name ag_news \
   --split train \
-  --output_dir output_aug/ \
-  --background gaussian \
-  --lined_paper \
-  --random_line_spacing \
-  --random_blur_level \
-  --effect_ink_bleed \
-  --effect_shadow
+  --output-dir output_aug/ \
+  --background lined \
+  --random-blur \
+  --ink-bleed \
+  --shadow
 ```
 
 ### C) Use CSV input
 
 ```bash
-uv run python VisionSynth/run.py \
-  --input_csv your_texts.csv \
-  --output_dir output_csv/ \
-  --output_csv labels.csv
+uv run visionsynth \
+  --input-csv your_texts.csv \
+  --output-dir output_csv/ \
+  --output-csv labels.csv
 ```
 
 ---
 
-## 6) Full CLI argument reference (`VisionSynth/run.py`)
+## 6) Full CLI argument reference (`src/visionsynth/cli.py`)
 
-The following options are defined in the parser.
+Run `uv run visionsynth --help` for the authoritative, up-to-date listing (grouped exactly as below). All long flags use hyphens (e.g. `--output-dir`); only `--font`/`-f` and `--output-dir`/`-o` have short aliases.
 
-### Core I/O
+### Input & output
 
-- `--output_dir` *(str, default: `output/`)*
-  - Output directory for generated images and CSV files.
-- `-ic, --input_csv` *(str, default: `""`)*
-  - Path to local input CSV file.
-- `-e, --extension` *(str, default: `.jpg`)*
-  - Output image extension.
-- `--output_csv` *(str, default: `output.csv`)*
-  - Name/path for output CSV file.
-- `--csv_file` *(str, default: `output.csv`)*
-  - CSV path used when accumulating.
-- `-f, --font` *(str, default: `None`)*
-  - Font file path to render text.
+- `--input-csv` *(str, default: `""`)* — path to a local input CSV file.
+- `--dataset-name` *(str, default: `None`)* — Hugging Face dataset id, used instead of `--input-csv`.
+- `--text-column` *(str, default: `"text"`)* — text column/field name.
+- `-o, --output-dir` *(str, default: `output/`)* — directory for generated images and CSV.
+- `--output-csv` *(str, default: `output.csv`)* — output CSV filename.
+- `--extension` *(str, default: `.jpg`)* — output image file extension.
+- `--max-samples` *(int, default: `None`)* — maximum number of rows to render (default: all).
 
-### Dataset source (Hugging Face)
+### Text rendering
 
-- `-name, --dataset_name` *(str, default: `None`)*
-  - Hugging Face dataset ID (e.g., `imdb`, `username/dataset`).
-- `-conf, --config_name` *(str, default: `None`)*
-  - Optional dataset config/subset.
-- `-sp, --split` *(str, default: `None`)*
-  - Dataset split to load.
-- `-s, --streaming` *(flag, default: `False`)*
-  - Enable streaming mode.
+- `-f, --font` *(str, required)* — path to a `.ttf`/`.otf` font file.
+- `--font-size` *(int, default: `28`)*
+- `--width` *(int, default: `1000`)*
+- `--height` *(int, default: `500`)*
 
-### Row/window control
+### Background
 
-- `-rs, --row_start` *(int, default: `0`)*
-  - Start processing from this row index.
-- `-r, --rows` *(str, default: `None`)*
-  - Row count/checkpoint-related parameter (description in source indicates resume/checkpoint usage).
-- `-ac --accumulate` *(flag, default: `False`)*
-  - Accumulate into an existing CSV.
+- `--background` *(choice: `plain|gaussian|image|lined|old|birch|parchment`, default: `plain`)* — single flag selecting the background style.
+- `--background-image-dir` *(str, default: `None`)* — source image directory, required when `--background image`.
+- `--blur` *(int, default: `0`)*
+- `--random-blur` *(flag)* — randomize blur between 0 and `--blur`.
 
-### Basic augmentation
+### Birch paper (used with `--background birch`)
 
-- `-bl, --blur_level` *(int, default: `0`)*
-  - Fixed blur level.
-- `-rbl, --random_blur_level` *(flag, default: `False`)*
-  - Random blur between 0 and `blur_level`.
+- `--birch-texture` *(float, default: `1.0`)* — spot-count multiplier.
+- `--birch-spots` *(int, default: `150`)* — explicit spot count (overrides texture).
+- `--birch-spot-radius` *('min,max' string, e.g. `12,30`, default: `10,25`)*
+- `--birch-intensity` *(int, default: `10`)*
+- `--birch-spot-sign` *(int, default: `-1`)* — 1 lighter, -1 darker, 0 random.
+- `--birch-irregularity` *(float, default: `0.35`)*
+- `--birch-blur` *(float, default: `1.2`)* — Gaussian blur sigma for spot softening.
+- `--birch-max-spots` *(int, default: `2000`)* — safety cap on spot count.
 
-### Background selection
+### Parchment paper (used with `--background parchment`)
 
-- `-b, --background` *(choice: `plain|gaussian|image`, default: `plain`)*
-  - Base background type.
+- `--parchment-texture` *(float, default: `1.0`)*
+- `--parchment-spots` *(int, default: `400`)*
+- `--parchment-spot-radius` *('min,max' string, e.g. `12,30`, default: `3,12`)*
+- `--parchment-intensity` *(int, default: `7`)*
+- `--parchment-spot-sign` *(int, default: `-1`)*
+- `--parchment-irregularity` *(float, default: `0.35`)*
+- `--parchment-blur` *(float, default: `1.2`)*
+- `--parchment-max-spots` *(int, default: `2000`)*
 
-### Lined paper options
+### Effects
 
-- `-ln, --lined_paper` *(flag)*
-- `-lns, --line_spacing` *(int, default: `15`)*
-- `-rlns, --random_line_spacing` *(flag)*
-- `-min_lns, --min_line_spacing` *(int, default: `15`)*
-- `-max_lns, --max_line_spacing` *(int, default: `25`)*
-- `-lni, --line_intensity` *(int, default: `100`)*
-- `-lnw, --line_width` *(int, default: `1`)*
-- `-rlnw, --random_line_width` *(flag)*
-- `-max_lnw, --max_line_width` *(int, default: `2`)*
+- `--fiber` *(flag)* / `--fiber-density` *(float, default: `0.2`)*
+- `--fold-creases` *(flag)* / `--fold-creases-intensity` *(int, default: `20`)*
+- `--ink-bleed` *(flag)* / `--ink-bleed-intensity` *(float, default: `0.3`)* / `--ink-bleed-radius` *(int, default: `3`)*
+- `--shadow` *(flag)* / `--shadow-intensity` *(float, default: `0.4`)* / `--shadow-angle` *(float, default: `45`)*
+- `--strain` *(flag)*
 
-### Old paper options
+### Hugging Face dataset source
 
-- `-old, --old_paper` *(flag)*
-- `-edw, --edge_width` *(float, default: `0.1`)*
-- `-ai, --aging_intensity` *(int, default: `15`)*
+- `--config-name` *(str, default: `None`)*
+- `--split` *(str, default: `None`)*
+- `--streaming` *(flag)*
 
-### Brownish paper (named `brich_*` in CLI)
+### Hugging Face Hub upload
 
-- `-bh, --brich_paper` *(flag)*
-- `-bht, --brich_texture` *(float, default: `1.0`)*
-- `-bhs, --brich_spots` *(int, default: `150`)*
-- `-bhr, --brich_spot_radius` *(tuple, default: `(10, 25)`)*
-- `-bhi, --brich_sport_intensity` *(int, default: `10`)*
-- `-bhsi, --brich_spot_sign` *(int, default: `-1`)*
-- `-bhir, --brich_irregularity` *(float, default: `0.35`)*
-- `-bhbl, --brich_blur` *(float, default: `1.2`)*
-- `-bhc, --brich_capspots` *(int, default: `2000`)*
-
-### Parchment paper options
-
-- `-ph, --parchment_paper` *(flag)*
-- `-pht, --parchment_texture` *(float, default: `1.0`)*
-- `-phs, --parchment_spots` *(int, default: `150`)*
-- `-phr, --parchment_spot_radius` *(tuple, default: `(10, 25)`)*
-- `-phi, --parchment_spot_intensity` *(int, default: `10`)*
-- `-phsi, --parchment_spot_sign` *(int, default: `1`)*
-- `-phir, --parchment_irregularity` *(float, default: `0.35`)*
-- `-phbl, --parchment_blur` *(float, default: `1.2`)*
-- `-phc, --parchment_capspots` *(int, default: `2000`)*
-
-### Additional effects
-
-- `-eff, --effect_fiber` *(flag)*
-- `-effd, --effect_fiber_density` *(float, default: `0.2`)*
-- `-efc, --effect_fold_creases` *(flag)*
-- `-efci, --effect_fold_creases_intensity` *(int, default: `20`)*
-- `-efink, --effect_ink_bleed` *(flag)*
-- `-efinki, --effect_ink_bleed_intensity` *(float, default: `0.3`)*
-- `-efinkr, --effect_ink_bleed_radius` *(int, default: `3`)*
-- `-efsh, --effect_shadow` *(flag)*
-- `-efshi, --effect_shadow_intensity` *(float, default: `0.4`)*
-- `-efshr, --effect_shadow_radius` *(int, default: `5`)*
-- `-efsa, --effect_shadows_angle` *(float, default: `45`)*
-- `-efst, --effect_strain` *(flag)*
+- `--push-to-hub` *(flag)*
+- `--hub-repo-id` *(str, default: `None`)*
+- `--hub-private` *(flag)*
 
 ---
 
@@ -256,17 +236,17 @@ The following options are defined in the parser.
 
 To convert HF dataset text into synthetic images reliably:
 
-1. Start with a small subset (`--rows` / split sample) to validate formatting.
+1. Start with a small subset (`--max-samples` / split sample) to validate formatting.
 2. Inspect the dataset schema and identify a safe text field.
 3. Run a baseline render with minimal effects.
 4. Gradually introduce blur/background/effects.
-5. Validate output labels (`output_csv`) against image files.
+5. Validate output labels (`--output-csv`) against image files.
 6. Scale up generation after quality checks.
 
 Recommended progression:
 
 - **Pass 1**: plain background, fixed blur 0, one font.
-- **Pass 2**: add lined/old/parchment toggles.
+- **Pass 2**: add lined/old/parchment `--background` styles.
 - **Pass 3**: add random blur + shadows + ink bleed.
 - **Pass 4**: use multiple fonts and style mixes.
 
@@ -284,49 +264,38 @@ Recommended progression:
 
 ## 9) Known caveats in current code state
 
-Based on current source files:
-
-- `VisionSynth/run.py` is parser-heavy and appears truncated after output directory creation.
-- `--effect_shadows_angle` is defined twice in parser.
-- `-ac --accumulate` appears as a concatenated short/long string token in code (likely needs correction to `"-ac", "--accumulate"`).
-- `VisionSynth/data_generator.py` is currently empty.
-
-If you plan production use, review and complete the execution path in `run.py` and validate parser behavior with `--help` and smoke tests.
+- `lined_paper()` in `background_generator.py` takes only `height`/`width` — line spacing/width/intensity aren't configurable (`--background lined` always uses the function's internal randomized defaults). The CLI has no flags for this on purpose (they were previously present but silently ignored, so they were removed rather than kept as dead options).
+- `distortion_generator.py`'s warp functions and a few `effects_generator.py` functions (`apply_perspective_distortion`, `apply_morphological_operations`, `simulate_scanner_artifacts`, `apply_lens_distortion`) exist but aren't exposed as CLI flags yet.
+- `huggingface_processor.py: load_huggingface_dataset` and `distortion_generator.py`'s warp functions swallow exceptions and return `None`/the input image unchanged on error.
 
 ---
 
 ## 10) Troubleshooting
 
 ### `ModuleNotFoundError: datasets` or `pandas`
-Install missing packages:
-
-```bash
-pip install datasets pandas
-```
+Run `uv sync` (or, with plain pip, `pip install -e .`) so all dependencies declared in `pyproject.toml` are installed.
 
 ### HF dataset fails to load
 - Verify dataset ID and split exist.
-- If dataset has configs, provide `--config_name`.
+- If dataset has configs, provide `--config-name`.
 - Try without `--streaming` first for easier debugging.
 
 ### No output images created
-- Confirm `run.py` main generation flow is complete in your branch.
-- Verify `output_dir` exists and is writable.
-- Test with tiny sample before large runs.
+- Verify `--output-dir` exists and is writable.
+- Test with tiny sample before large runs (`--max-samples`).
 
 ---
 
 ## 11) Suggested next improvements
 
-- Add a `--text_column` CLI argument explicitly.
+- Grow `tests/` beyond the current lean scaffold (e.g. an end-to-end test rendering a few images with a real font).
 - Add deterministic seed control for reproducibility.
-- Add a formal schema for `output_csv`.
-- Add unit tests for parser and HF dataset loading.
-- Add integration test generating 5 images from a toy dataset.
+- Add a formal schema for `--output-csv`.
+- Publish releases to PyPI once the API/CLI is considered stable (metadata and `uv build` are already in place).
 
 ---
 
 ## 12) License
 
-Add your project license here (MIT/Apache-2.0/etc.) if you intend to distribute.
+MIT — see `LICENSE`.
 

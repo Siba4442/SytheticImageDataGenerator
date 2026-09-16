@@ -4,7 +4,23 @@ __pycache__/
 build/
 dist/
 wheels/
-*.egg-info
+*.egg-info/
 
 # Virtual environments
-.venv
+.venv/
+
+# Tooling caches
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Claude Code / local agent tooling (not part of the project)
+.agents/
+.claude/
+.rtk/
+graphify-out/
+CLAUDE.md
+skills-lock.json
+
+# Default CLI output (generated images/CSV)
+output/
